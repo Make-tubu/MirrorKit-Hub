@@ -48,7 +48,7 @@ Desktop.ini
 /MirrorLauncher/presets.json
 /MirrorLauncher/test-api.js
 
-# ====== Unrelated / Legacy projects under webclone ======
+# ====== Unrelated / Legacy projects under parent directory ======
 # (Only keep MirrorKit, MirrorLauncher, and the one-click bat)
 /animal-island-ui/
 /site/

@@ -49,7 +49,7 @@ MirrorKit Hub 是一个网页离线镜像框架，能够将任意网站完整抓
 ## 项目结构
 
 ```
-webclone/
+MirrorKit-Hub/
 ├── MirrorKit/                  # 核心代理服务器（基于原版增强）
 │   ├── server.js               # 本地代理服务器
 │   ├── tools/                  # 批量下载与校验工具
