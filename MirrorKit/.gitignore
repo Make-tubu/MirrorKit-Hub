@@ -1,0 +1,54 @@
+# Node / editor
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+.vscode/
+.idea/
+
+# System files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ====== Downloaded mirror content ======
+# The project repository should contain only the tool/framework code.
+# All cached website mirrors are excluded by matching top-level domain patterns.
+/*.com/
+/*.net/
+/*.org/
+/*.dev/
+/*.io/
+/*.cn/
+/*.ai/
+/*.works/
+/*.co/
+/*.app/
+/*.appspot.com/
+
+# Explicit exclusions for non-TLD mirror paths
+/assets/
+/storage.googleapis.com/
+/cdn.jsdelivr.net/
+/www.googletagmanager.com/
+/bb-mcp/
+/work
+/back'/
+
+# ====== Personal debug / utility scripts (not part of core framework) ======
+/extract_video.js
+/fetch_bundle.js
+/fetch_levora.js
+/tools/hydrate-montfort.js
+
+# ====== Cache / build / backup artifacts ======
+*.bad
+*.tmp
+*.log
+*.bak
+
+# ====== MirrorLauncher runtime data ======
+/MirrorLauncher/node_modules/
+/MirrorLauncher/presets.json
+/MirrorLauncher/test-api.js

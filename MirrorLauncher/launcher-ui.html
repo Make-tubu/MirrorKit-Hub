@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MirrorHub - 镜像控制面板</title>
+    <!-- 引入 Outfit 现代无衬线字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080B11;
+            --sidebar-bg: rgba(13, 17, 28, 0.7);
+            --card-bg: rgba(22, 28, 45, 0.4);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            
+            --primary: #8B5CF6;       /* 紫色 - 预设/选定 */
+            --primary-glow: rgba(139, 92, 246, 0.15);
+            
+            --cyan: #06B6D4;          /* 青蓝 - 服务器运行 */
+            --cyan-glow: rgba(6, 182, 212, 0.15);
+            
+            --amber: #F59E0B;         /* 琥珀 - 下载中 */
+            --amber-glow: rgba(245, 158, 11, 0.15);
+            
+            --rose: #F43F5E;          /* 玫瑰红 - 报错/删除 */
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
+            color: var(--text-main);
+            font-family: 'Outfit', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 侧边栏 */
+        aside {
+            width: 320px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: flex-col;
+            height: 100vh;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .aside-inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
+        .brand {
+            padding: 24px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            font-size: 24px;
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #FFF, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .add-preset-btn {
+            margin: 20px 24px 10px;
+            background: linear-gradient(135deg, var(--primary), #6366F1);
+            color: #FFF;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            transition: var(--transition);
+        }
+
+        .add-preset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+        }
+
+        .add-preset-btn:active {
+            transform: translateY(0);
+        }
+
+        .preset-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preset-item {
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+        }
+
+        .preset-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .preset-item.active {
+            background: var(--primary-glow);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.05);
+        }
+
+        .preset-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            height: 60%;
+            width: 4px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .preset-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preset-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #FFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 170px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-downloaded {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-none {
+            background: rgba(107, 114, 128, 0.1);
+            color: #9CA3AF;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+        }
+
+        .preset-host {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preset-folder {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'Fira Code', monospace;
+            opacity: 0.7;
+        }
+
+        /* 主工作区 */
+        main {
+            flex: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            overflow-y: auto;
+            gap: 24px;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .current-title-area h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFF;
+        }
+        
+        .current-title-area p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* 控制面板卡片行 */
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 状态呼吸灯 */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9CA3AF;
+        }
+
+        .status-dot.active-cyan {
+            background: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+            animation: pulse-cyan 2s infinite;
+        }
+
+        .status-dot.active-amber {
+            background: var(--amber);
+            box-shadow: 0 0 10px var(--amber);
+            animation: pulse-amber 2s infinite;
+        }
+
+        @keyframes pulse-cyan {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+
+        @keyframes pulse-amber {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        /* 卡片内容排版 */
+        .info-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+        }
+
+        .info-value {
+            font-family: 'Fira Code', monospace;
+            color: #FFF;
+        }
+
+        .info-link {
+            color: var(--cyan);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--cyan);
+            transition: var(--transition);
+        }
+
+        .info-link:hover {
+            color: #22D3EE;
+            border-bottom-style: solid;
+        }
+
+        /* 按钮设计 */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .btn-cyan {
+            background: linear-gradient(135deg, var(--cyan), #0891B2);
+            color: #FFF;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+        }
+
+        .btn-cyan:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(6, 182, 212, 0.35);
+        }
+
+        .btn-amber {
+            background: linear-gradient(135deg, var(--amber), #D97706);
+            color: #FFF;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-amber:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border-color: var(--card-border);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.2);
+            color: var(--rose);
+        }
+
+        .btn-danger:hover {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: rgba(244, 63, 94, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* 选项框布局 */
+        .option-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .option-checkbox-row input {
+            cursor: pointer;
+            accent-color: var(--amber);
+        }
+
+        /* 配置编辑区 */
+        .edit-row {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #FFF;
+            font-size: 13px;
+            font-family: inherit;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* 虚拟终端卡片 */
+        .terminal-card {
+            flex: 1;
+            min-height: 280px;
+            background: #05070C;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .terminal-header {
+            background: rgba(13, 17, 28, 0.9);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: #10B981; }
+
+        .terminal-title {
+            font-size: 12px;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .terminal-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .terminal-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .terminal-btn:hover {
+            color: #FFF;
+        }
+
+        .terminal-body {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #A3A3A3;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .log-line {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-save { color: #10B981; }      /* 保存 */
+        .log-skip { color: #6B7280; }      /* 跳过 */
+        .log-fail { color: #F43F5E; }      /* 失败 */
+        .log-reject { color: #FB7185; }    /* 拒绝保存 */
+        .log-error { color: #EF4444; font-weight: bold; } /* 系统报错 */
+        .log-info { color: #60A5FA; }      /* 系统提示 */
+        .log-pass { color: #FBBF24; font-weight: 500; }  /* 轮次信息 */
+
+        /* 模态对话框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+            background: #0E1322;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFF;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 侧边栏 -->
+    <aside>
+        <div class="aside-inner">
+            <div class="brand">
+                <span class="brand-logo">🔮</span>
+                <span class="brand-title">MirrorHub</span>
+            </div>
+            
+            <button class="add-preset-btn" onclick="openAddModal()">
+                <span>➕</span> 新建站点预设
+            </button>
+            
+            <div class="preset-list" id="presetList">
+                <!-- 预设列表项将由此动态生成 -->
+                <div class="preset-item active">
+                    <div class="preset-header">
+                        <span class="preset-title">加载中...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 主操作区 -->
+    <main>
+        <!-- 主头部 -->
+        <div class="main-header">
+            <div class="current-title-area">
+                <h2 id="activeTitle">---</h2>
+                <p id="activeDesc">---</p>
+            </div>
+        </div>
+
+        <!-- 启停控制面板 -->
+        <div class="controls-row">
+            <!-- 镜像服务器卡片 -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <span class="card-title">📡 本地代理服务器 (server.js)</span>
+                    <div class="status-badge">
+                        <span class="status-dot" id="serverDot"></span>
+                        <span id="serverStatusText">检测中...</span>
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">代理目标站：</span>
+                        <span class="info-value" id="cardTargetHost">---</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">本地监听端口：</span>
+                        <span class="info-value">3000</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">启动入口地址：</span>
+                        <span class="info-value">
+                            <a href="#" id="localProxyLink" class="info-link" target="_blank">---</a>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <label class="option-checkbox-row">
+                            <input type="checkbox" id="offlineModeCheckbox">
+                            <span>🔒 纯离线模式（禁止远程拉取，保护本地缓存）</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-cyan" id="startServerBtn" onclick="toggleServer(true)">
+                        <span>▶</span> 启动本地代理
+                    </button>
+                    <button class="btn btn-outline" id="stopServerBtn" onclick="toggleServer(false)" disabled>
+                        <span>■</span> 停止服务器
+                    </button>
+                </div>
+            </div>
+
+            <!-- 通用资源抓取器卡片 -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <span class="card-title">📥 资源抓取下载器 (mirror-assets.js)</span>
+                    <div class="status-badge">
+                        <span class="status-dot" id="downloaderDot"></span>
+                        <span id="downloaderStatusText">闲置</span>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">抓取目标站：</span>
+                        <span class="info-value" id="downloadTargetHost">---</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">保存文件夹：</span>
+                        <span class="info-value" id="downloadMirrorFolder">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label class="option-checkbox-row">
+                            <input type="checkbox" id="retryBadCheckbox">
+                            <span>强制重新校验并下载坏缓存 (--retry-bad)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-amber" id="startAssetDownloadBtn" onclick="startDownload('assets')">
+                        <span>🚀</span> 抓取通用资源
+                    </button>
+                    <button class="btn btn-outline" id="startCmsDownloadBtn" onclick="startDownload('cms')">
+                        <span>📺</span> 抓取隐藏媒体 (CMS)
+                    </button>
+                    <button class="btn btn-danger" id="stopDownloadBtn" onclick="stopDownload()" disabled>
+                        <span>■</span> 终止下载
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 站点具体配置编辑区 -->
+        <div class="glass-card edit-row">
+            <div class="card-header" style="border: none; padding-bottom: 0;">
+                <span class="card-title">⚙️ 配置当前激活站点</span>
+            </div>
+            
+            <form id="editForm" onsubmit="saveActiveConfig(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">站点名称 (别名)</label>
+                        <input type="text" class="form-input" id="editName" required placeholder="例如：GitHub (本地测试)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">起始入口路径 (START_PATH)</label>
+                        <input type="text" class="form-input" id="editStartPath" required placeholder="例如：/ 或 /cn" value="/">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">目标网站源站 (TARGET_HOST)</label>
+                        <input type="url" class="form-input" id="editTargetHost" required placeholder="以 https:// 或 http:// 开头，不要以斜杠结尾，例如：https://example.com" oninput="autoDeriveFolder()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">本地镜像文件夹名 (MIRROR_NAME)</label>
+                        <input type="text" class="form-input" id="editMirrorName" required placeholder="存放缓存的物理文件夹，例如：example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">本地代理服务器与抓取代理</label>
+                        <div style="display: flex; gap: 12px; align-items: center; height: 100%;">
+                            <label class="option-checkbox-row" style="margin-top: 0;">
+                                <input type="checkbox" id="editUseProxy" onchange="toggleEditProxyInput()">
+                                <span style="font-weight: 500; color: #fff;">启用网络代理</span>
+                            </label>
+                            <input type="text" class="form-input" id="editProxyAddress" placeholder="代理地址，例如：http://127.0.0.1:10808" value="http://127.0.0.1:10808" style="flex: 1; padding: 6px 10px;" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group" style="margin-top: 24px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-danger" id="deletePresetBtn" style="max-width: 120px;" onclick="deleteActivePreset()">
+                        <span>🗑️</span> 删除预设
+                    </button>
+                    <button type="submit" class="btn btn-cyan" style="max-width: 160px;">
+                        <span>💾</span> 保存配置并应用
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 终端日志输出 -->
+        <div class="terminal-card">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <span class="terminal-dot dot-red"></span>
+                    <span class="terminal-dot dot-yellow"></span>
+                    <span class="terminal-dot dot-green"></span>
+                </div>
+                <div class="terminal-title">TERMINAL OUTPUT (REALTIME LOGS)</div>
+                <div class="terminal-actions">
+                    <label class="option-checkbox-row" style="color: var(--text-muted); font-size: 11px;">
+                        <input type="checkbox" id="autoScrollCheckbox" checked>
+                        <span>自动滚动</span>
+                    </label>
+                    <button class="terminal-btn" onclick="clearTerminal()">
+                        <span>🧹</span> 清屏
+                    </button>
+                </div>
+            </div>
+            
+            <div class="terminal-body" id="terminalBody">
+                <div class="log-line log-info">MirrorHub 🔮 可视化终端已启动。等待日志载入...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 新建预设模态框 -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>新建站点镜像预设</h3>
+            </div>
+            
+            <form onsubmit="addPresetSubmit(event)">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">站点名称 (别名)</label>
+                        <input type="text" class="form-input" id="addName" required placeholder="例如：Example Domain">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">目标网站源站 (TARGET_HOST)</label>
+                        <input type="url" class="form-input" id="addTargetHost" required placeholder="https://example.com" oninput="autoDeriveAddFolder()">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">本地镜像文件夹名 (MIRROR_NAME)</label>
+                        <input type="text" class="form-input" id="addMirrorName" required placeholder="example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">起始入口路径 (START_PATH)</label>
+                        <input type="text" class="form-input" id="addStartPath" required placeholder="/" value="/">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">网络代理配置</label>
+                        <div style="display: flex; gap: 8px; align-items: center; height: 100%;">
+                            <label class="option-checkbox-row" style="margin-top: 0;">
+                                <input type="checkbox" id="addUseProxy" onchange="toggleAddProxyInput()" checked>
+                                <span style="font-weight: 500; color: #fff;">启用代理</span>
+                            </label>
+                            <input type="text" class="form-input" id="addProxyAddress" placeholder="http://127.0.0.1:10808" value="http://127.0.0.1:10808" style="flex: 1; padding: 6px 10px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" style="max-width: 100px;" onclick="closeAddModal()">取消</button>
+                    <button type="submit" class="btn btn-cyan" style="max-width: 140px;">💾 创建预设</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 前端脚本逻辑 -->
+    <script>
+        let presets = [];
+        let activeId = null;
+        let sseLogSource = null;
+
+        // 页面初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchPresets();
+            initSSE();
+            
+            // 每2秒轮询状态
+            pollStatus();
+            setInterval(pollStatus, 2000);
+        });
+
+        // ================= 站点预设 API 交互 =================
+
+        async function fetchPresets() {
+            try {
+                const response = await fetch('/api/presets');
+                presets = await response.json();
+                renderPresets();
+                
+                // 默认选择第一个
+                if (presets.length > 0 && !activeId) {
+                    selectPreset(presets[0].id);
+                }
+            } catch (err) {
+                appendLog(`[ERROR] 载入预设列表失败: ${err.message}`, 'error');
+            }
+        }
+
+        function renderPresets() {
+            const listContainer = document.getElementById('presetList');
+            listContainer.innerHTML = '';
+
+            presets.forEach(p => {
+                const isSelected = p.id === activeId;
+                const folderBadge = p.existsLocally 
+                    ? '<span class="badge badge-downloaded">本地已存</span>' 
+                    : '<span class="badge badge-none">云端未拷</span>';
+                
+                const proxyBadge = p.useProxy 
+                    ? '<span style="color: var(--amber); margin-right: 4px;" title="已配置代理抓取/运行">🔌</span>' 
+                    : '';
+
+                const item = document.createElement('div');
+                item.className = `preset-item ${isSelected ? 'active' : ''}`;
+                item.onclick = () => selectPreset(p.id);
+
+                item.innerHTML = `
+                    <div class="preset-header">
+                        <span class="preset-title" title="${p.name}">${proxyBadge}${p.name}</span>
+                        ${folderBadge}
+                    </div>
+                    <div class="preset-host" title="${p.targetHost}">${p.targetHost}</div>
+                    <div class="preset-folder">${p.mirrorName}${p.startPath}</div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function selectPreset(id) {
+            activeId = id;
+            const preset = presets.find(p => p.id === id);
+            if (!preset) return;
+
+            // 重新高亮左侧
+            renderPresets();
+
+            // 更新右侧标题区
+            document.getElementById('activeTitle').textContent = preset.name;
+            document.getElementById('activeDesc').textContent = `物理文件夹位置: /MirrorKit/${preset.mirrorName}/`;
+
+            // 更新服务器与下载器右侧卡片静态数据展示
+            document.getElementById('cardTargetHost').textContent = preset.targetHost;
+            document.getElementById('downloadTargetHost').textContent = preset.targetHost;
+            document.getElementById('downloadMirrorFolder').textContent = `${preset.mirrorName}/`;
+
+            // 更新配置编辑表单
+            document.getElementById('editName').value = preset.name;
+            document.getElementById('editTargetHost').value = preset.targetHost;
+            document.getElementById('editMirrorName').value = preset.mirrorName;
+            document.getElementById('editStartPath').value = preset.startPath;
+            document.getElementById('editUseProxy').checked = !!preset.useProxy;
+            document.getElementById('editProxyAddress').value = preset.proxyAddress || 'http://127.0.0.1:10808';
+            toggleEditProxyInput();
+
+            // 生成本地预览地址
+            const localUrl = `http://localhost:3000/${preset.mirrorName}${preset.startPath.startsWith('/') ? preset.startPath : '/' + preset.startPath}`;
+            const linkEl = document.getElementById('localProxyLink');
+            linkEl.href = localUrl;
+            linkEl.textContent = localUrl;
+            
+            appendLog(`[SYSTEM] 切换激活站点预设为: ${preset.name}`, 'info');
+        }
+
+        // 智能防呆：根据 Target Host 自动推导 Mirror Name 文件夹
+        function autoDeriveFolder() {
+            const host = document.getElementById('editTargetHost').value.trim();
+            const mirrorInput = document.getElementById('editMirrorName');
+            try {
+                const url = new URL(host);
+                // 剔除 www. 前缀
+                let name = url.hostname.replace(/^www\./i, '');
+                mirrorInput.value = name;
+            } catch {
+                // 不合法 URL 时不覆盖，由用户手动输入
+            }
+        }
+
+        function autoDeriveAddFolder() {
+            const host = document.getElementById('addTargetHost').value.trim();
+            const mirrorInput = document.getElementById('addMirrorName');
+            try {
+                const url = new URL(host);
+                let name = url.hostname.replace(/^www\./i, '');
+                mirrorInput.value = name;
+            } catch {
+                // 忽略
+            }
+        }
+
+        // 保存编辑的配置
+        async function saveActiveConfig(event) {
+            event.preventDefault();
+            if (!activeId) return;
+
+            const name = document.getElementById('editName').value.trim();
+            const targetHost = document.getElementById('editTargetHost').value.trim();
+            const mirrorName = document.getElementById('editMirrorName').value.trim();
+            const startPath = document.getElementById('editStartPath').value.trim();
+            const useProxy = document.getElementById('editUseProxy').checked;
+            const proxyAddress = document.getElementById('editProxyAddress').value.trim();
+
+            const updatedPreset = {
+                id: activeId,
+                name,
+                targetHost,
+                mirrorName,
+                startPath,
+                useProxy,
+                proxyAddress
+            };
+
+            try {
+                const response = await fetch('/api/presets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedPreset)
+                });
+                
+                if (response.ok) {
+                    appendLog(`[SYSTEM] 站点 [${name}] 的配置更新保存成功！`, 'info');
+                    await fetchPresets();
+                    selectPreset(activeId);
+                } else {
+                    throw new Error('保存接口返回异常');
+                }
+            } catch (err) {
+                appendLog(`[ERROR] 保存配置失败: ${err.message}`, 'error');
+            }
+        }
+
+        // 删除当前预设
+        async function deleteActivePreset() {
+            if (!activeId) return;
+            const preset = presets.find(p => p.id === activeId);
+            if (!preset) return;
+
+            if (!confirm(`确认删除预设 "${preset.name}" 吗？该操作不会删除物理下载的文件夹。`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/presets?id=${activeId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    appendLog(`[SYSTEM] 预设 [${preset.name}] 删除成功。`, 'info');
+                    activeId = null;
+                    await fetchPresets();
+                } else {
+                    throw new Error('删除接口返回异常');
+                }
+            } catch (err) {
+                appendLog(`[ERROR] 删除预设失败: ${err.message}`, 'error');
+            }
+        }
+
+        // ================= 模态窗控制 =================
+
+        function openAddModal() {
+            document.getElementById('addName').value = '';
+            document.getElementById('addTargetHost').value = '';
+            document.getElementById('addMirrorName').value = '';
+            document.getElementById('addStartPath').value = '/';
+            document.getElementById('addUseProxy').checked = true;
+            document.getElementById('addProxyAddress').value = 'http://127.0.0.1:10808';
+            toggleAddProxyInput();
+            document.getElementById('addModal').classList.add('open');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('open');
+        }
+
+        async function addPresetSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('addName').value.trim();
+            const targetHost = document.getElementById('addTargetHost').value.trim();
+            const mirrorName = document.getElementById('addMirrorName').value.trim();
+            const startPath = document.getElementById('addStartPath').value.trim();
+            const useProxy = document.getElementById('addUseProxy').checked;
+            const proxyAddress = document.getElementById('addProxyAddress').value.trim();
+
+            const newPreset = {
+                id: String(Date.now()),
+                name,
+                targetHost,
+                mirrorName,
+                startPath,
+                useProxy,
+                proxyAddress
+            };
+
+            try {
+                const response = await fetch('/api/presets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newPreset)
+                });
+                
+                if (response.ok) {
+                    appendLog(`[SYSTEM] 新站点 [${name}] 创建成功！`, 'info');
+                    closeAddModal();
+                    await fetchPresets();
+                    selectPreset(newPreset.id);
+                } else {
+                    throw new Error('新增接口返回失败');
+                }
+            } catch (err) {
+                appendLog(`[ERROR] 创建预设失败: ${err.message}`, 'error');
+            }
+        }
+
+        function toggleEditProxyInput() {
+            const checked = document.getElementById('editUseProxy').checked;
+            document.getElementById('editProxyAddress').disabled = !checked;
+        }
+
+        function toggleAddProxyInput() {
+            const checked = document.getElementById('addUseProxy').checked;
+            document.getElementById('addProxyAddress').disabled = !checked;
+        }
+
+        // ================= 后台状态轮询 =================
+
+        async function pollStatus() {
+            try {
+                // 1. 查询服务器状态
+                const srvRes = await fetch('/api/server/status');
+                const srv = await srvRes.json();
+                
+                const srvDot = document.getElementById('serverDot');
+                const srvText = document.getElementById('serverStatusText');
+                const startBtn = document.getElementById('startServerBtn');
+                const stopBtn = document.getElementById('stopServerBtn');
+
+                if (srv.running) {
+                    srvDot.className = 'status-dot active-cyan';
+                    srvText.textContent = `运行中 (站点 ID: ${srv.activePresetId})`;
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                } else {
+                    srvDot.className = 'status-dot';
+                    srvText.textContent = '已停止';
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                }
+
+                // 2. 查询下载器状态
+                const dlRes = await fetch('/api/downloader/status');
+                const dl = await dlRes.json();
+
+                const dlDot = document.getElementById('downloaderDot');
+                const dlText = document.getElementById('downloaderStatusText');
+                const dlAssetBtn = document.getElementById('startAssetDownloadBtn');
+                const dlCmsBtn = document.getElementById('startCmsDownloadBtn');
+                const dlStopBtn = document.getElementById('stopDownloadBtn');
+
+                if (dl.running) {
+                    dlDot.className = 'status-dot active-amber';
+                    dlText.textContent = dl.scriptType === 'assets' ? '通用资源抓取中...' : '隐藏媒体抓取中...';
+                    dlAssetBtn.disabled = true;
+                    dlCmsBtn.disabled = true;
+                    dlStopBtn.disabled = false;
+                } else {
+                    dlDot.className = 'status-dot';
+                    dlText.textContent = '闲置';
+                    dlAssetBtn.disabled = false;
+                    dlCmsBtn.disabled = false;
+                    dlStopBtn.disabled = true;
+                }
+
+            } catch (err) {
+                // 暂时不刷屏报错，防止拔网线/离线断联时崩溃
+            }
+        }
+
+        // ================= 服务器控制 API =================
+
+        async function toggleServer(shouldStart) {
+            if (shouldStart && !activeId) {
+                alert('请先选择一个需要代理启动的站点预设。');
+                return;
+            }
+
+            const url = shouldStart ? '/api/server/start' : '/api/server/stop';
+            const offlineMode = document.getElementById('offlineModeCheckbox').checked;
+            const body = shouldStart ? JSON.stringify({ id: activeId, offlineMode }) : null;
+
+            try {
+                appendLog(`[SYSTEM] 正在请求${shouldStart ? '启动' : '停止'}本地代理服务器...`, 'info');
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    appendLog(`[SYSTEM] ${data.message}`, 'info');
+                    pollStatus();
+                } else {
+                    throw new Error(data.message || '操作失败');
+                }
+            } catch (err) {
+                appendLog(`[ERROR] 操作服务器进程失败: ${err.message}`, 'error');
+            }
+        }
+
+        // ================= 资源下载器控制 =================
+
+        async function startDownload(scriptType) {
+            if (!activeId) {
+                alert('请先选择或创建一个站点预设。');
+                return;
+            }
+
+            const retryBad = document.getElementById('retryBadCheckbox').checked;
+
+            try {
+                appendLog(`[SYSTEM] 准备启动资源下载脚本, 类型: [${scriptType === 'assets' ? '通用资源' : '隐藏媒体'}], 重试坏缓存: ${retryBad}`, 'info');
+                const res = await fetch('/api/downloader/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: activeId,
+                        scriptType,
+                        retryBad
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    appendLog(`[SYSTEM] ${data.message}`, 'info');
+                    pollStatus();
+                } else {
+                    throw new Error(data.message || '启动下载失败');
+                }
+            } catch (err) {
+                appendLog(`[ERROR] 后台下载任务启动错误: ${err.message}`, 'error');
+            }
+        }
+
+        async function stopDownload() {
+            try {
+                appendLog('[SYSTEM] 正在强制停止下载脚本进程...', 'info');
+                const res = await fetch('/api/downloader/stop', { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    appendLog(`[SYSTEM] ${data.message}`, 'info');
+                    pollStatus();
+                } else {
+                    throw new Error(data.message || '停止进程失败');
+                }
+            } catch (err) {
+                appendLog(`[ERROR] 停止进程失败: ${err.message}`, 'error');
+            }
+        }
+
+        // ================= SSE 实时日志系统 =================
+
+        function initSSE() {
+            if (sseLogSource) {
+                sseLogSource.close();
+            }
+
+            // 连接到服务端的 SSE 日志推流接口
+            sseLogSource = new EventSource('/api/downloader/logs');
+
+            sseLogSource.onmessage = (event) => {
+                parseAndAppendLog(event.data);
+            };
+
+            sseLogSource.onerror = (err) => {
+                // 如果断开（可能后端在重启），等几秒重连
+                console.log('SSE 连接暂时断开，准备自动重连...');
+            };
+        }
+
+        // 识别日志状态关键字，并高亮着色渲染
+        function parseAndAppendLog(line) {
+            if (!line) return;
+
+            let logClass = 'log-info';
+            const cleanLine = line.trim();
+
+            if (cleanLine.startsWith('save')) {
+                logClass = 'log-save';
+            } else if (cleanLine.startsWith('skip')) {
+                logClass = 'log-skip';
+            } else if (cleanLine.startsWith('fail')) {
+                logClass = 'log-fail';
+            } else if (cleanLine.startsWith('reject')) {
+                logClass = 'log-reject';
+            } else if (cleanLine.startsWith('error') || cleanLine.startsWith('[Failed]') || cleanLine.includes('[Error]')) {
+                logClass = 'log-error';
+            } else if (cleanLine.startsWith('Pass')) {
+                logClass = 'log-pass';
+            } else if (cleanLine.startsWith('Done.') || cleanLine.startsWith('Mirror folder:')) {
+                logClass = 'log-save';
+            } else if (cleanLine.startsWith('Scanned') || cleanLine.startsWith('Pass') || cleanLine.startsWith('{ save:')) {
+                logClass = 'log-pass';
+            }
+
+            appendLog(line, logClass);
+        }
+
+        function appendLog(text, className = 'log-info') {
+            const body = document.getElementById('terminalBody');
+            const line = document.createElement('div');
+            line.className = `log-line ${className}`;
+            
+            // 获取当前时间戳前缀
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            
+            line.textContent = `[${timeStr}] ${text}`;
+            body.appendChild(line);
+
+            // 限制行数防止内存泄漏，最大 1000 行
+            if (body.children.length > 1000) {
+                body.removeChild(body.firstChild);
+            }
+
+            // 自动滚动到最底
+            if (document.getElementById('autoScrollCheckbox').checked) {
+                body.scrollTop = body.scrollHeight;
+            }
+        }
+
+        function clearTerminal() {
+            const body = document.getElementById('terminalBody');
+            body.innerHTML = '<div class="log-line log-info">控制台已手动清空。等待新日志...</div>';
+        }
+    </script>
+</body>
+</html>

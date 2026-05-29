@@ -1,0 +1,56 @@
+# Node / Package Manager dependencies
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# Editor / System files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ====== MirrorKit Downloaded Sites Exclusions ======
+# Excludes all dynamically downloaded site mirrors under MirrorKit
+/MirrorKit/*.com/
+/MirrorKit/*.net/
+/MirrorKit/*.org/
+/MirrorKit/*.dev/
+/MirrorKit/*.io/
+/MirrorKit/*.cn/
+/MirrorKit/*.ai/
+/MirrorKit/*.works/
+/MirrorKit/*.co/
+/MirrorKit/*.app/
+/MirrorKit/*.appspot.com/
+/MirrorKit/assets/
+/MirrorKit/storage.googleapis.com/
+/MirrorKit/cdn.jsdelivr.net/
+/MirrorKit/www.googletagmanager.com/
+/MirrorKit/bb-mcp/
+/MirrorKit/work/
+/MirrorKit/back'/
+
+# ====== MirrorKit Debug / Backup Exclusions ======
+/MirrorKit/extract_video.js
+/MirrorKit/fetch_bundle.js
+/MirrorKit/fetch_levora.js
+/MirrorKit/tools/hydrate-montfort.js
+*.bad
+*.tmp
+*.log
+*.bak
+
+# ====== MirrorLauncher Configurations ======
+# Exclude local presets and only track presets.json.example
+/MirrorLauncher/presets.json
+/MirrorLauncher/test-api.js
+
+# ====== Unrelated / Legacy projects under webclone ======
+# (Only keep MirrorKit, MirrorLauncher, and the one-click bat)
+/animal-island-ui/
+/site/
+/web-cloner-extension/
+/proxy-*.log

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1",
+    "name": "Example Domain",
+    "targetHost": "https://example.com",
+    "mirrorName": "example.com",
+    "startPath": "/",
+    "useProxy": false,
+    "proxyAddress": ""
+  }
+]
