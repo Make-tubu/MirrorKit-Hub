@@ -1,6 +1,6 @@
 # MirrorKit Hub
 
-> 🔀 **Fork of [ZzaiQWQ/MirrorKit](https://github.com/nichuanfang/MirrorKit)** — 基于原版 MirrorKit 的增强分支，新增可视化控制面板、SPA 根路径服务模式和二进制资产保护机制。
+> 🔀 **Fork of [ZzaiQWQ/MirrorKit](https://github.com/ZzaiQWQ/MirrorKit)** — 基于原版 MirrorKit 的增强分支，新增可视化控制面板、SPA 根路径服务模式和二进制资产保护机制。
 
 [中文](#mirrorkit-hub) | [English](#english)
 
@@ -133,7 +133,7 @@ node server.js
 
 ## 致谢
 
-本项目基于 [ZzaiQWQ/MirrorKit](https://github.com/nichuanfang/MirrorKit) 进行二次开发，感谢原作者的优秀架构设计。
+本项目基于 [ZzaiQWQ/MirrorKit](https://github.com/ZzaiQWQ/MirrorKit) 进行二次开发，感谢原作者的优秀架构设计。
 
 原版协议为 GNU AGPL v3，本 Fork 的新增代码（MirrorLauncher、SERVE_AT_ROOT、二进制保护等）以 MIT 协议发布。
 
@@ -149,7 +149,7 @@ node server.js
 
 ### What is this
 
-MirrorKit Hub is an enhanced fork of [ZzaiQWQ/MirrorKit](https://github.com/nichuanfang/MirrorKit) — a web page offline mirroring framework that downloads entire websites for local pixel-perfect browsing.
+MirrorKit Hub is an enhanced fork of [ZzaiQWQ/MirrorKit](https://github.com/ZzaiQWQ/MirrorKit) — a web page offline mirroring framework that downloads entire websites for local pixel-perfect browsing.
 
 ### What's new in this fork
 
