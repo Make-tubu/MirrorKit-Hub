@@ -722,6 +722,12 @@
                             <span>🔒 纯离线模式（禁止远程拉取，保护本地缓存）</span>
                         </label>
                     </div>
+                    <div class="info-item">
+                        <label class="option-checkbox-row">
+                            <input type="checkbox" id="serveAtRootCheckbox">
+                            <span>🏠 根路径服务模式 (支持 SPA 应用)</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="btn-group">
@@ -1215,7 +1221,8 @@
 
             const url = shouldStart ? '/api/server/start' : '/api/server/stop';
             const offlineMode = document.getElementById('offlineModeCheckbox').checked;
-            const body = shouldStart ? JSON.stringify({ id: activeId, offlineMode }) : null;
+            const serveAtRoot = document.getElementById('serveAtRootCheckbox').checked;
+            const body = shouldStart ? JSON.stringify({ id: activeId, offlineMode, serveAtRoot }) : null;
 
             try {
                 appendLog(`[SYSTEM] 正在请求${shouldStart ? '启动' : '停止'}本地代理服务器...`, 'info');

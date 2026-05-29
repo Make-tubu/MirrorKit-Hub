@@ -288,6 +288,11 @@ const server = http.createServer(async (req, res) => {
                     spawnEnv.OFFLINE_MODE = '1';
                 }
 
+                // 根路径服务模式：解决 SPA 前端路由问题
+                if (data.serveAtRoot) {
+                    spawnEnv.SERVE_AT_ROOT = 'true';
+                }
+
                 // 准备参数列表
                 const nodeArgs = [];
 
