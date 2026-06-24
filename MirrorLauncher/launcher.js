@@ -88,15 +88,15 @@ function readJsonBody(req) {
 // ================= 辅助函数：扫描本地实际存在文件夹 =================
 
 function scanLocalFolders() {
-    if (!fs.existsSync(MIRROR_KIT_DIR)) {
+    const mirrorsDir = path.join(MIRROR_KIT_DIR, 'mirrors');
+    if (!fs.existsSync(mirrorsDir)) {
         return [];
     }
     try {
-        const exclude = new Set(['.git', 'tools', 'node_modules', 'MirrorLauncher']);
-        return fs.readdirSync(MIRROR_KIT_DIR, { withFileTypes: true })
+        return fs.readdirSync(mirrorsDir, { withFileTypes: true })
             .filter(dirent => dirent.isDirectory())
             .map(dirent => dirent.name)
-            .filter(name => !exclude.has(name) && fs.existsSync(path.join(MIRROR_KIT_DIR, name, 'index.html')));
+            .filter(name => fs.existsSync(path.join(mirrorsDir, name, 'index.html')));
     } catch (err) {
         console.error('Scanning local folders failed:', err.message);
         return [];

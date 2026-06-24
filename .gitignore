@@ -14,16 +14,7 @@ Desktop.ini
 
 # ====== MirrorKit Downloaded Sites Exclusions ======
 # Excludes all dynamically downloaded site mirrors under MirrorKit
-/MirrorKit/*.com/
-/MirrorKit/*.net/
-/MirrorKit/*.org/
-/MirrorKit/*.dev/
-/MirrorKit/*.io/
-/MirrorKit/*.cn/
-/MirrorKit/*.ai/
-/MirrorKit/*.works/
-/MirrorKit/*.co/
-/MirrorKit/*.app/
+/MirrorKit/mirrors/
 /MirrorKit/*.appspot.com/
 /MirrorKit/assets/
 /MirrorKit/storage.googleapis.com/

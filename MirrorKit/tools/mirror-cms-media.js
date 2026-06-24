@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ROOT：项目根目录。脚本在 tools 目录里，所以向上一级。
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(__dirname, '..', 'mirrors');
 
 // ====== CMS 媒体补充下载配置 ======
 // 这个脚本是通用下载器的补充，不影响 tools/mirror-assets.js。

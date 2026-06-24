@@ -242,7 +242,7 @@ function getLocalPath(reqPath) {
     }
 
     const normalizedPath = path.normalize(diskPath).replace(/^(\.\.[/\\])+/, '');
-    const localPath = path.join(baseDir, normalizedPath);
+    const localPath = path.join(baseDir, 'mirrors', normalizedPath);
     const resolvedBase = path.resolve(baseDir);
     const resolvedLocal = path.resolve(localPath);
 

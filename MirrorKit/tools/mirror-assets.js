@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ROOT：项目根目录。脚本在 tools 目录里，所以向上一级。
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(__dirname, '..', 'mirrors');
 
 // ====== 站点配置区：换网站时主要改这里 ======
 // TARGET_HOST：目标网站源站，只写协议 + 域名，不要带最后的斜杠。
